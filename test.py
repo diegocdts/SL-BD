@@ -105,21 +105,21 @@ def call_test(base_channels,
               result_dir, 
               test_y_path, 
               test_x_path = None, 
-              mean_y = None, 
-              std_y = None, 
-              mean_x = None, 
-              std_x = None, 
+              y_scaler = None, 
+              x_scaler = None, 
               reversed_polarity = False):
     test_dir = f'{result_dir}/test_{Path(test_y_path).stem}' if reversed_polarity is False else f'{result_dir}/test_{Path(test_y_path).stem}_RP'
     os.makedirs(test_dir, exist_ok=True)
 
     print(f'TESTING')
 
-    seismic_data, _, _ = load_data(data_path=test_y_path, to_norm=True, mean=mean_y, std=std_y)
+    seismic_data, _, _ = load_data(data_path=test_y_path, to_norm=False)
+    seismic_data = y_scaler.transform(seismic_data)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {test_y_path}')
 
     if test_x_path is not None:
-        ground_truth, _, _ = load_data(data_path=test_x_path, to_norm=True, mean=mean_x, std=std_x)
+        ground_truth, _, _ = load_data(data_path=test_x_path, to_norm=False)
+        ground_truth = x_scaler.transform(ground_truth)
         print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {test_x_path}')
     else:
         ground_truth = None
