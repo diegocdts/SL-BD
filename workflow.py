@@ -20,10 +20,11 @@ for line in arr:
     epochs = int(line[0])
     lr = float(line[1])
     base_channels = int(line[2])
-    train_y_path = line[3]
-    test_y_path = line[4]
-    train_x_path = line[5]
-    test_x_path = line[6]
+    directory = line[3]
+    train_y_path = os.path.join(directory,line[4])
+    test_y_path = os.path.join(directory,line[5])
+    train_x_path = os.path.join(directory,line[6])
+    test_x_path = os.path.join(directory,line[7])
 
     dir_name = str(Path(train_y_path).parent.name)
 
