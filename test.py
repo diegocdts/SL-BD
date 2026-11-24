@@ -4,7 +4,7 @@ import torch
 from pathlib import Path
 from model import SSLBD
 from visualization import plot_comparison
-from load import load_data
+from load import load_data, norm_data
 from wavelet_estimation import estimate_zero_phase_wavelet
 from losses import relative_sparsity_mu
 from scores import export_metrics_csv
@@ -100,6 +100,7 @@ def test_ssl_bd(
 def call_test(base_channels, 
               result_dir, 
               test_y_path, 
+              hess_path,
               test_x_path = None,
               reversed_polarity = False):
     test_dir = f'{result_dir}/test_{Path(test_y_path).stem}' if reversed_polarity is False else f'{result_dir}/test_{Path(test_y_path).stem}_RP'
@@ -110,11 +111,17 @@ def call_test(base_channels,
     seismic_data = load_data(data_path=test_y_path)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {test_y_path}')
 
+    hess_data = load_data(data_path=hess_path)
+    print(f'Y: Shape: {hess_data.shape}  - min: {hess_data.min():.4f}    - max: {hess_data.max():.4f}  - Path: {hess_path}')
+
     if test_x_path is not None:
         ground_truth = load_data(data_path=test_x_path)
         print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {test_x_path}')
     else:
         ground_truth = None
+
+    seismic_data = norm_data(seismic_data, hess_data)
+    ground_truth = norm_data(ground_truth, hess_data)
 
     if reversed_polarity:
         seismic_data = -seismic_data

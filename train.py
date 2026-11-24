@@ -27,7 +27,7 @@ from wavelet_estimation import estimate_zero_phase_wavelet
 from losses import relative_sparsity_mu
 from model import SSLBD
 from visualization import plot_wavelets
-from load import load_data
+from load import load_data, norm_data
 
 
 def train_ssl_bd(
@@ -145,14 +145,20 @@ def train_ssl_bd(
     plot_wavelets(wavelets_dir, title=wavelet_title)
 
 
-def call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title):
+def call_train(epochs, lr, base_channels, train_y_path, train_x_path, hess_path, result_dir, wavelet_title):
     print(f'TRAINING: Epochs: {epochs} - lr: {lr} - Base Channels: {base_channels}')
 
     seismic_data = load_data(data_path=train_y_path)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {train_y_path}')
 
+    hess_data = load_data(data_path=hess_path)
+    print(f'Y: Shape: {hess_data.shape}  - min: {hess_data.min():.4f}    - max: {hess_data.max():.4f}  - Path: {hess_path}')
+
     ground_truth = load_data(data_path=train_x_path)
     print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {train_x_path}')
+
+    seismic_data = norm_data(seismic_data, hess_data)
+    ground_truth = norm_data(ground_truth, hess_data)
 
     train_ssl_bd(seismic_data=seismic_data, 
                 ground_truth=ground_truth, 

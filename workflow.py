@@ -20,10 +20,13 @@ for line in arr:
     epochs = int(line[0])
     lr = float(line[1])
     base_channels = int(line[2])
-    train_y_path = line[3]
-    test_y_path = line[4]
-    train_x_path = line[5]
-    test_x_path = line[6]
+    directory = line[3]
+    train_y_path = os.path.join(directory,line[4])
+    test_y_path = os.path.join(directory,line[5])
+    train_x_path = os.path.join(directory,line[6])
+    test_x_path = os.path.join(directory,line[7])
+    train_hess_path = os.path.join(directory,line[8])
+    test_hess_path = os.path.join(directory,line[9])
 
     dir_name = str(Path(train_y_path).parent.name)
 
@@ -31,14 +34,14 @@ for line in arr:
     wavelet_title = f'{dir_name}_{base_channels}'
     os.makedirs(result_dir, exist_ok=True)
 
-    call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title)
+    call_train(epochs, lr, base_channels, train_y_path, train_x_path, train_hess_path, result_dir, wavelet_title)
     loss_paths.append(f'{result_dir}/loss_history.npy')
 
-    call_test(base_channels, result_dir, train_y_path, train_x_path)
+    call_test(base_channels, result_dir, train_y_path, test_hess_path, train_x_path)
 
     if train_y_path != test_y_path:
-        call_test(base_channels, result_dir, test_y_path, test_x_path)
-        call_test(base_channels, result_dir, test_y_path, test_x_path, reversed_polarity=True)
+        call_test(base_channels, result_dir, test_y_path, test_hess_path, test_x_path)
+        call_test(base_channels, result_dir, test_y_path, test_hess_path, test_x_path, reversed_polarity=True)
 
 call_losses(loss_paths)
 
