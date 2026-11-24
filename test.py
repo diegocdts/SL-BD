@@ -3,7 +3,7 @@ import numpy as np
 import torch
 from pathlib import Path
 from model import SSLBD
-from visualization import plot_comparison2, load_data, extract_patches, reconstruct_patches, crop_data
+from visualization import plot_comparison, load_data, extract_patches, reconstruct_patches, crop_data
 from wavelet_estimation import estimate_zero_phase_wavelet
 from losses import relative_sparsity_mu
 from scores import export_metrics_csv
@@ -89,13 +89,13 @@ def test_ssl_bd(
 
     np.save(f'{test_dir}/reflectivity.npy', prediction)
 
-    snr2 = export_metrics_csv(input=seismic_data, output=prediction, results_dir=test_dir, target=ground_truth)
+    metrics = export_metrics_csv(input=seismic_data, output=prediction, results_dir=test_dir, target=ground_truth)
 
-    plot_comparison2(input=seismic_data, 
+    plot_comparison(input=seismic_data, 
                         output=prediction, 
                         results_dir=test_dir, 
                         name='reflectivity', 
-                        snr2=snr2, 
+                        metrics=metrics, 
                         target=ground_truth) 
     
     return prediction
@@ -104,29 +104,24 @@ def test_ssl_bd(
 def call_test(base_channels, 
               result_dir, 
               test_y_path, 
-              test_x_path = None, 
-              mean_y = None, 
-              std_y = None, 
-              mean_x = None, 
-              std_x = None, 
+              test_x_path = None,
               reversed_polarity = False):
     test_dir = f'{result_dir}/test_{Path(test_y_path).stem}' if reversed_polarity is False else f'{result_dir}/test_{Path(test_y_path).stem}_RP'
     os.makedirs(test_dir, exist_ok=True)
 
     print(f'TESTING')
 
-    seismic_data, _, _ = load_data(data_path=test_y_path, to_norm=True, mean=mean_y, std=std_y)
+    seismic_data = load_data(data_path=test_y_path, to_norm=True)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {test_y_path}')
 
     if test_x_path is not None:
-        ground_truth, _, _ = load_data(data_path=test_x_path, to_norm=True, mean=mean_x, std=std_x)
+        ground_truth = load_data(data_path=test_x_path, to_norm=True)
         print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {test_x_path}')
     else:
         ground_truth = None
 
     if reversed_polarity:
         seismic_data = -seismic_data
-        ground_truth = -ground_truth
 
     test_ssl_bd(seismic_data=seismic_data,
                 ground_truth=ground_truth, 

@@ -31,14 +31,14 @@ for line in arr:
     wavelet_title = f'{dir_name}_{base_channels}'
     os.makedirs(result_dir, exist_ok=True)
 
-    mean_y, std_y, mean_x, std_x = call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title)
+    call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title)
     loss_paths.append(f'{result_dir}/loss_history.npy')
 
-    call_test(base_channels, result_dir, train_y_path, train_x_path, mean_y, std_y, mean_x, std_x)
+    call_test(base_channels, result_dir, train_y_path, train_x_path)
 
     if train_y_path != test_y_path:
-        call_test(base_channels, result_dir, test_y_path, test_x_path, mean_y, std_y, mean_x, std_x)
-        call_test(base_channels, result_dir, test_y_path, test_x_path, mean_y, std_y, mean_x, std_x, reversed_polarity=True)
+        call_test(base_channels, result_dir, test_y_path, test_x_path)
+        call_test(base_channels, result_dir, test_y_path, test_x_path, reversed_polarity=True)
 
 call_losses(loss_paths)
 

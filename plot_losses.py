@@ -57,12 +57,12 @@ def plot_training_losses(loss_paths, model_names, results_dir):
         plt.figure(figsize=(10, 6))
 
         for loss_path, model_name in zip(loss_paths, model_names):
-            if is_self_sup:
+            """if is_self_sup:
                 if 'SELF' not in loss_path:
                     continue
             else:
                 if 'SELF' in loss_path:
-                    continue
+                    continue"""
             loss = np.load(loss_path)
 
             start_epoch = 2000
@@ -99,8 +99,8 @@ def plot_training_losses(loss_paths, model_names, results_dir):
         )
 
         plt.close()
-    make_zoom(is_self_sup=True)
-    make_zoom(is_self_sup=False)
+    #make_zoom(is_self_sup=True)
+    #make_zoom(is_self_sup=False)
 
 
 def call_losses(loss_paths):

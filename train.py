@@ -152,10 +152,10 @@ def train_ssl_bd(
 def call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title):
     print(f'TRAINING: Epochs: {epochs} - lr: {lr} - Base Channels: {base_channels}')
 
-    seismic_data, mean_y, std_y = load_data(data_path=train_y_path, to_norm=True)
+    seismic_data = load_data(data_path=train_y_path, to_norm=True)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {train_y_path}')
 
-    ground_truth, mean_x, std_x = load_data(data_path=train_x_path, to_norm=True)
+    ground_truth = load_data(data_path=train_x_path, to_norm=True)
     print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {train_x_path}')
 
     train_ssl_bd(seismic_data=seismic_data, 
@@ -167,6 +167,4 @@ def call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir
                 wavelet_title=wavelet_title)
 
     print('Fim do treino')
-
-    return mean_y, std_y, mean_x, std_x 
 
