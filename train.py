@@ -22,13 +22,12 @@ import numpy as np
 import torch
 import os
 import copy
-from pathlib import Path
 
 from wavelet_estimation import estimate_zero_phase_wavelet
 from losses import relative_sparsity_mu
 from model import SSLBD
-from visualization import plot_comparison, plot_wavelets, load_data, extract_patches, reconstruct_patches
-from scores import export_metrics_csv
+from visualization import plot_wavelets
+from load import load_data
 
 
 def train_ssl_bd(
@@ -90,14 +89,11 @@ def train_ssl_bd(
     w0_np = estimate_zero_phase_wavelet(seismic_data)
     w0 = torch.tensor(w0_np, dtype=torch.float32, device=device)
 
-    y_start, x_start = 200, 3500
     # dado sísmico obsevado como tensor (batch=1, canal=1, n_traces, n_samples)
-    # y_patch, _ = extract_patches(seismic_data, y_start, x_start, to_norm=True)
     y_obs = torch.tensor(seismic_data, dtype=torch.float32, device=device)
     y_obs = y_obs.unsqueeze(0).unsqueeze(0)
 
     # ground truth como tensor (batch=1, canal=1, n_traces, n_samples)
-    # x_patch, _ = extract_patches(ground_truth, y_start, x_start, to_norm=True)
     r_real = torch.tensor(ground_truth, dtype=torch.float32, device=device)
     r_real = r_real.unsqueeze(0).unsqueeze(0)
 
@@ -152,10 +148,10 @@ def train_ssl_bd(
 def call_train(epochs, lr, base_channels, train_y_path, train_x_path, result_dir, wavelet_title):
     print(f'TRAINING: Epochs: {epochs} - lr: {lr} - Base Channels: {base_channels}')
 
-    seismic_data = load_data(data_path=train_y_path, to_norm=True)
+    seismic_data = load_data(data_path=train_y_path)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {train_y_path}')
 
-    ground_truth = load_data(data_path=train_x_path, to_norm=True)
+    ground_truth = load_data(data_path=train_x_path)
     print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {train_x_path}')
 
     train_ssl_bd(seismic_data=seismic_data, 

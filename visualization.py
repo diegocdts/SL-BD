@@ -1,93 +1,8 @@
 import numpy as np
-import segyio
 import re
 import os
 import matplotlib.pyplot as plt
-import matplotlib.patches as patches
 
-from pathlib import Path
-
-
-def extract_patches(image, y_start=None, x_start=None, patch_size=(352, 1400), to_norm=False):
-    ph, pw = patch_size
-    h, w = image.shape[-2:]
-
-    patches = []
-    positions = []
-
-    if x_start is not None and y_start is not None:
-        y_end = y_start + ph
-        x_end = x_start + pw
-        patch = image[..., y_start:y_end, x_start:x_end]
-        if to_norm:
-            patch = zScore(patch)
-        patches.append(patch)
-        positions.append((y_start, x_start, y_end, x_end))
-    else:
-        if to_norm:
-            image = zScore(image)
-        for y in range(0, h, ph):
-            for x in range(0, w, pw):
-
-                y_end = min(y + ph, h)
-                x_end = min(x + pw, w)
-
-                patch = image[..., y:y_end, x:x_end]
-
-                # padding para o tamanho fixo
-                padded = np.zeros(
-                    (*image.shape[:-2], ph, pw),
-                    dtype=image.dtype
-                )
-
-                padded[..., :y_end-y, :x_end-x] = patch
-
-                patches.append(padded)
-                positions.append((y, x, y_end, x_end))
-
-    return np.stack(patches), positions
-
-
-def reconstruct_patches(predictions, positions, original_shape):
-    h, w = original_shape[-2:]
-
-    output = np.zeros(
-        (*predictions.shape[1:-2], h, w),
-        dtype=predictions.dtype
-    )
-
-    for prediction, (y, x, y_end, x_end) in zip(
-        predictions, positions
-    ):
-        output[..., y:y_end, x:x_end] = \
-            prediction[..., :y_end-y, :x_end-x]
-
-    return output
-
-
-def crop_data(data, positions):
-    (y, x, y_end, x_end) = positions[0]
-
-    return data[..., y:y_end, x:x_end]
-
-
-def zScore(data, mean = None, std = None, n_std = 3):
-    mean = np.mean(data) if mean is None else mean
-    std = np.std(data) if mean is None else std
-    return (data) / (std * n_std)
-
-def load_data(data_path: str, to_norm: bool = True):
-    if '.npy' in data_path:
-        data = np.load(data_path).astype("float32")
-    else:
-        with segyio.open(data_path, ignore_geometry=False) as file:
-            data = file.iline[1]
-    data = data[200:532,3500:4900]
-    data = data if data.ndim == 2 else data[0]
-    data = data.reshape(data.shape[-2], data.shape[-1])
-    if to_norm:
-        print("Need to apply normalization")
-    return data
 
 def vmin_vmax_percentile(target):
     vmin = np.percentile(target, 2)
@@ -99,6 +14,7 @@ def vmin_vmax_percentile(target):
         vmin = -np.abs(vmax)
     
     return vmin, vmax
+
 
 def plot_wavelet(
     wavelet: np.ndarray,

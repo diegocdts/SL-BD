@@ -3,7 +3,8 @@ import numpy as np
 import torch
 from pathlib import Path
 from model import SSLBD
-from visualization import plot_comparison, load_data, extract_patches, reconstruct_patches, crop_data
+from visualization import plot_comparison
+from load import load_data
 from wavelet_estimation import estimate_zero_phase_wavelet
 from losses import relative_sparsity_mu
 from scores import export_metrics_csv
@@ -49,17 +50,12 @@ def test_ssl_bd(
     w0_np = estimate_zero_phase_wavelet(seismic_data)
     w0 = torch.tensor(w0_np, dtype=torch.float32, device=device)
 
-    y_start, x_start = 200, 3500
     # dado sísmico como tensor (batch=1, canal=1, n_traces, n_samples)
-    # y_patches, positions = extract_patches(seismic_data)
-    # y_patch, positions = extract_patches(seismic_data, y_start, x_start, to_norm=True)
     y_obs = torch.tensor(seismic_data, dtype=torch.float32, device=device)
     y_obs = y_obs.unsqueeze(0).unsqueeze(0)
 
     # ground truth como tensor (batch=1, canal=1, n_traces, n_samples)
     if ground_truth is not None:
-        # x_patches, _ = extract_patches(ground_truth)
-        # x_patch, _ = extract_patches(ground_truth, y_start, x_start, to_norm=True)
         r_real = torch.tensor(ground_truth, dtype=torch.float32, device=device)
         r_real = r_real.unsqueeze(0).unsqueeze(0)
     else:
@@ -111,11 +107,11 @@ def call_test(base_channels,
 
     print(f'TESTING')
 
-    seismic_data = load_data(data_path=test_y_path, to_norm=True)
+    seismic_data = load_data(data_path=test_y_path)
     print(f'Y: Shape: {seismic_data.shape}  - min: {seismic_data.min():.4f}    - max: {seismic_data.max():.4f}  - Path: {test_y_path}')
 
     if test_x_path is not None:
-        ground_truth = load_data(data_path=test_x_path, to_norm=True)
+        ground_truth = load_data(data_path=test_x_path)
         print(f'X: Shape: {ground_truth.shape}  - min: {ground_truth.min():.4f}    - max: {ground_truth.max():.4f}   - Path: {test_x_path}')
     else:
         ground_truth = None
